@@ -1,0 +1,18 @@
+ {
+  "configurations": {
+    "run": {
+      "adapter": "debugpy",
+      "configuration": {
+        "protocal": "auto",
+        "type": "python",
+        "request": "launch",
+        "cwd": "${workspaceRoot}",
+        "python": "/usr/bin/python",
+        "stopOnEntry": true,
+        "console": "integratedTerminal",
+        "debugOptions": [],
+        "program": "/home/moon/Desktop/Python/blackjack.py"
+      }
+    }
+  }
+}
