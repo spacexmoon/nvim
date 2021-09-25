@@ -77,6 +77,8 @@ let g:rust_clip_command = 'xclip -selection clipboard'
 
 let g:gruvbox_invert_selection=0
 
+let g:UltiSnipsExpandTrigger="<>"
+
 let g:seiya_auto_enable=1
 let g:seiya_target_groups = has('nvim') ? ['guibg'] : ['ctermbg']
 
