@@ -17,7 +17,9 @@ nnoremap <leader>ts :Telescope find_files<CR>
 nnoremap <leader>fz :FZF<CR>
 tnoremap <Esc> <C-\><c-n>
 nnoremap <leader>te :term<CR>
-noremap <leader>fr :Autoformat<CR>
+nnoremap <leader>fr :Autoformat<CR>
+nnoremap <Tab> >>
+nnoremap <S-Tab> <<
 
 "==============================================================================
 
