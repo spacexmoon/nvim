@@ -470,7 +470,6 @@ lua <<EOF
     },
     formatting = {
     format = function(entry, vim_item)
-      local icons = require("M").icons
       vim_item.kind = icons[vim_item.kind]
       vim_item.menu = ({
         nvim_lsp = "[L]",
@@ -518,7 +517,7 @@ EOF
 lua <<EOF
 local M = {}
 
-M.icons = {
+icons = {
   Class = " ",
   Color = " ",
   Constant = " ",
