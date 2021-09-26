@@ -144,6 +144,7 @@ Plug 'SirVer/ultisnips'
 Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'glepnir/lspsaga.nvim'
 Plug 'Shadorain/shadovim'
+Plug 'onsails/lspkind-nvim'
 
 call plug#end()
 
@@ -466,8 +467,29 @@ lua <<EOF
       { name = 'tags' },
       
       { name = 'shadovim' },
-    }
-  })
+    },
+    formatting = {
+    format = function(entry, vim_item)
+      local icons = require("M").icons
+      vim_item.kind = icons[vim_item.kind]
+      vim_item.menu = ({
+        nvim_lsp = "[L]",
+        emoji = "[E]",
+        path = "[F]",
+        calc = "[C]",
+        buffer = "[B]",
+        ultisnips = "[U]",
+        -- add nvim_lua as well
+      })[entry.source.name]
+      vim_item.dup = ({
+        buffer = 1,
+        path = 1,
+        nvim_lsp = 1,
+      })[entry.source.name] or 0
+      return vim_item
+    end,
+  },
+})
 
   -- Setup lspconfig.
   require 'lspconfig'.pyright.setup {
@@ -487,4 +509,54 @@ get_bufnrs = function()
   return vim.api.nvim_list_bufs()
 end
 
+EOF
+
+"==============================================================================
+
+"lspkind icons
+
+lua <<EOF
+local M = {}
+
+M.icons = {
+  Class = " ",
+  Color = " ",
+  Constant = " ",
+  Constructor = " ",
+  Enum = "了 ",
+  EnumMember = " ",
+  Event = "",
+  -- Field = " ",
+  Field = "ﰠ",
+  -- File = " ",
+  File = "",
+  Folder = " ",
+  Function = " ",
+  Interface = "ﰮ ",
+  Keyword = " ",
+  Method = "ƒ ",
+  Module = " ",
+  Operator = "",
+  Property = " ",
+  Reference = "",
+  Snippet = "﬌ ",
+  Struct = " ",
+  -- Text = " ",
+  Text = "",
+  TypeParameter = "",
+  -- Unit = " ",
+  Unit = "塞",
+  Value = " ",
+  -- Variable = " ",
+  Variable = "",
+}
+
+function M.setup()
+  local kinds = vim.lsp.protocol.CompletionItemKind
+  for i, kind in ipairs(kinds) do
+    kinds[i] = M.icons[kind] or kind
+  end
+end
+
+return M
 EOF
