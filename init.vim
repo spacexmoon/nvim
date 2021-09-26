@@ -129,6 +129,7 @@ Plug 'rust-lang/rust.vim'
 Plug 'darrikonn/vim-gofmt', { 'do': ':GoUpdateBinaries' }
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'vim-autoformat/vim-autoformat'
+Plug 'mbbill/undotree'
 
 Plug 'ThePrimeagen/refactoring.nvim'
 
