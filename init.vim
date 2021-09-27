@@ -147,6 +147,9 @@ let g:startify_custom_header = [
 "     \'⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠉⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀ ',
 "     \]
 
+let g:lsp_settings_servers_dir = "/home/moon/.config/nvim//vim-lsp-settings/servers"
+
+let g:rust_clip_command = 'xclip -selection clipboard'
 "==============================================================================
 
 "Plugins
@@ -186,6 +189,7 @@ Plug 'darrikonn/vim-gofmt', { 'do': ':GoUpdateBinaries' }
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'vim-autoformat/vim-autoformat'
 Plug 'mbbill/undotree'
+Plug 'rust-analyzer/rust-analyzer'
 
 Plug 'ThePrimeagen/refactoring.nvim'
 
@@ -202,6 +206,8 @@ Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'glepnir/lspsaga.nvim'
 Plug 'Shadorain/shadovim'
 Plug 'onsails/lspkind-nvim'
+Plug 'prabirshrestha/vim-lsp'
+Plug 'mattn/vim-lsp-settings'
 
 call plug#end()
 
@@ -329,6 +335,14 @@ require'lspconfig'.rust_analyzer.setup{}
 
 require'lspconfig'.tsserver.setup{}
 
+require'lspconfig'.clangd.setup{}
+
+require'lspconfig'.html.setup{}
+
+require'lspconfig'.cssls.setup{}
+
+require'lspconfig'.vimls.setup{}
+
 vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
@@ -368,7 +382,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -376,6 +390,13 @@ for _, lsp in ipairs(servers) do
       debounce_text_changes = 150,
     }
   }
+
+require'lspconfig'.tsserver.setup{
+  filetypes = { "typescript", "typescriptreact", "typescript.tsx" },
+  root_dir = function() return vim.loop.cwd() end      -- run lsp for javascript in any directory
+
+}
+
 end
 EOF
 
@@ -645,3 +666,59 @@ end
 return M
 EOF
 
+"==============================================================================
+
+"vim-lsp
+
+if executable('css')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'css',
+        \ 'cmd': {server_info->['css']},
+        \ 'allowlist': ['css'],
+        \ })
+endif
+
+if executable('html')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'html',
+        \ 'cmd': {server_info->['html']},
+        \ 'allowlist': ['html'],
+        \ })
+endif
+
+if executable('vim')
+    au User lsp_setup call lsp#register_server({
+        \ 'name': 'vim',
+        \ 'cmd': {server_info->['vim']},
+        \ 'allowlist': ['vim'],
+        \ })
+endif
+
+function! s:on_lsp_buffer_enabled() abort
+    setlocal omnifunc=lsp#complete
+    setlocal signcolumn=yes
+    if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
+    nmap <buffer> gd <plug>(lsp-definition)
+    nmap <buffer> gs <plug>(lsp-document-symbol-search)
+    nmap <buffer> gS <plug>(lsp-workspace-symbol-search)
+    nmap <buffer> gr <plug>(lsp-references)
+    nmap <buffer> gi <plug>(lsp-implementation)
+    nmap <buffer> gt <plug>(lsp-type-definition)
+    nmap <buffer> <leader>rn <plug>(lsp-rename)
+    nmap <buffer> [g <plug>(lsp-previous-diagnostic)
+    nmap <buffer> ]g <plug>(lsp-next-diagnostic)
+    nmap <buffer> K <plug>(lsp-hover)
+    inoremap <buffer> <expr><c-f> lsp#scroll(+4)
+    inoremap <buffer> <expr><c-d> lsp#scroll(-4)
+
+    let g:lsp_format_sync_timeout = 1000
+    autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
+    
+    " refer to doc to add more commands
+endfunction
+
+augroup lsp_install
+    au!
+    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
+    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
+augroup END
