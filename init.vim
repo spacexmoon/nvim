@@ -394,9 +394,10 @@ for _, lsp in ipairs(servers) do
 require'lspconfig'.tsserver.setup{
   filetypes = { "typescript", "typescriptreact", "typescript.tsx" },
   root_dir = function() return vim.loop.cwd() end      -- run lsp for javascript in any directory
-
 }
 
+require'lspconfig'.rust_analyzer.setup{
+root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs")}
 end
 EOF
 
