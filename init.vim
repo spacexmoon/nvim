@@ -356,6 +356,8 @@ require'lspconfig'.sumneko_lua.setup{}
 
 require'lspconfig'.jsonls.setup {}
 
+require'lspconfig'.sqls.setup{}
+
 vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
@@ -395,7 +397,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'jsonls' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'jsonls', 'sqls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -411,7 +413,13 @@ require'lspconfig'.tsserver.setup{
 }
 
 require'lspconfig'.rust_analyzer.setup{
-root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs")}
+    cmd = {"rust-analyzer"};
+    filetypes = { "rust" },
+    root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs"),
+      settings = {
+      ["rust-analyzer"] = {}
+    }
+}
 
 local system_name
 if vim.fn.has("mac") == 1 then
@@ -434,6 +442,8 @@ table.insert(runtime_path, "lua/?/init.lua")
 
 require'lspconfig'.sumneko_lua.setup {
   cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
+  filetypes = { "lua" },
+  log_level = 2,
   settings = {
     Lua = {
       runtime = {
@@ -492,8 +502,97 @@ capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 require'lspconfig'.jsonls.setup {
   capabilities = capabilities,
+  cmd = { "vscode-json-language-server", "--stdio" };
+    filetypes = { "json" },
+    init_options = {
+      provideFormatter = true
+    }
+}
+
+--Enable (broadcasting) snippet capability for completion
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+require'lspconfig'.cssls.setup {
+  capabilities = capabilities,
+  cmd = { "vscode-css-language-server", "--stdio" };
+    filetypes = { "css", "scss", "less" },
+    settings = {
+      css = {
+        validate = true
+      },
+      less = {
+        validate = true
+      },
+      scss = {
+        validate = true
+      }
+    }
+}
+
+require'lspconfig'.vimls.setup{
+    cmd = { "vim-language-server", "--stdio" };
+    filetypes = { "vim" },
+    init_options = {
+      diagnostic = {
+        enable = true
+      },
+      indexes = {
+        count = 3,
+        gap = 100,
+        projectRootPatterns = { "runtime", "nvim", ".git", "autoload", "plugin" },
+        runtimepath = true
+      },
+      iskeyword = "@,48-57,_,192-255,-#",
+      runtimepath = "",
+      suggest = {
+        fromRuntimepath = true,
+        fromVimruntime = true
+      },
+      vimruntime = ""
+    },
+    root_dir = function(fname)
+          return vim.fn.getcwd()
+        end,
+}
+
+
+--Enable (broadcasting) snippet capability for completion
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+require'lspconfig'.html.setup {
+  capabilities = capabilities,
+  cmd = { "vscode-html-language-server", "--stdio" };
+    filetypes = { "html" },
+    init_options = {
+      configurationSection = { "html", "css", "javascript" },
+      embeddedLanguages = {
+        css = true,
+        javascript = true
+      }
+    },
+    root_dir = function(fname)
+          return util.root_pattern('package.json', '.git')(fname) or util.path.dirname(fname)
+        end,
+    settings = {}
+}
+
+require'lspconfig'.clangd.setup{
+    capabilities = capabilities,
+    cmd = { "clangd", "--background-index" };
+    filetypes = { "c", "cpp", "objc", "objcpp" },
 }
 end
+
+require'lspconfig'.sqls.setup{
+    cmd = { "sqls" };
+    filetypes = { "sql", "mysql" },
+    root_dir = function(fname)
+          return util.root_pattern 'config.yml'(fname) or util.path.dirname(fname)
+        end,
+    settings = {}
+}
 EOF
 
 "==============================================================================
@@ -834,4 +933,3 @@ lua << EOF
 require('telescope').setup{}
 EOF
 
-"===============================================================================
