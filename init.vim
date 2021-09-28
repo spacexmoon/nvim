@@ -13,13 +13,17 @@ nnoremap <silent><F3>   :MaximizerToggle<CR>
 nnoremap <C-b>  :RainbowToggle<CR>
 vnoremap <silent><F3> :MaximizerToggle<CR>gv
 inoremap <silent><F3> <C-o>:MaximizerToggle<CR>
-nnoremap <leader>ts :Telescope find_files<CR>
 nnoremap <leader>fz :FZF<CR>
 tnoremap <Esc> <C-\><c-n>
 nnoremap <leader>te :term<CR>
 nnoremap <leader>fr :Autoformat<CR>
 nnoremap <Tab> >>
 nnoremap <S-Tab> <<
+
+nnoremap <leader>ts :Telescope find_files<CR>
+nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+nnoremap <leader>fb <cmd>Telescope buffers<cr>
+nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 nnoremap <leader>xx <cmd>TroubleToggle<cr>
 nnoremap <leader>xw <cmd>TroubleToggle lsp_workspace_diagnostics<cr>
@@ -827,4 +831,12 @@ telescope.setup {
 }
 EOF
 
-"=====================================================================================================================
+"==============================================================================
+
+" Telescope 
+
+lua << EOF
+require('telescope').setup{}
+EOF
+
+"==============================================================================
