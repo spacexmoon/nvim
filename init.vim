@@ -147,9 +147,8 @@ let g:startify_custom_header = [
 "     \'⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠉⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀ ',
 "     \]
 
-let g:lsp_settings_servers_dir = "/home/moon/.config/nvim//vim-lsp-settings/servers"
-
 let g:rust_clip_command = 'xclip -selection clipboard'
+
 "==============================================================================
 
 "Plugins
@@ -206,8 +205,6 @@ Plug 'quangnguyen30192/cmp-nvim-ultisnips'
 Plug 'glepnir/lspsaga.nvim'
 Plug 'Shadorain/shadovim'
 Plug 'onsails/lspkind-nvim'
-Plug 'prabirshrestha/vim-lsp'
-Plug 'mattn/vim-lsp-settings'
 
 call plug#end()
 
@@ -343,6 +340,8 @@ require'lspconfig'.cssls.setup{}
 
 require'lspconfig'.vimls.setup{}
 
+require'lspconfig'.sumneko_lua.setup{}
+
 vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
@@ -382,7 +381,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -398,6 +397,52 @@ require'lspconfig'.tsserver.setup{
 
 require'lspconfig'.rust_analyzer.setup{
 root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs")}
+
+local system_name
+if vim.fn.has("mac") == 1 then
+  system_name = "macOS"
+elseif vim.fn.has("unix") == 1 then
+  system_name = "Linux"
+elseif vim.fn.has('win32') == 1 then
+  system_name = "Windows"
+else
+  print("Unsupported system for sumneko")
+end
+
+-- set the path to the sumneko installation; if you previously installed via the now deprecated :LspInstall, use
+local sumneko_root_path = vim.fn.stdpath('cache')..'/lspconfig/sumneko_lua/lua-language-server'
+local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
+
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, "lua/?.lua")
+table.insert(runtime_path, "lua/?/init.lua")
+
+require'lspconfig'.sumneko_lua.setup {
+  cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+        -- Setup your lua path
+        path = runtime_path,
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = {'vim'},
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file("", true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
+
 end
 EOF
 
@@ -668,58 +713,3 @@ return M
 EOF
 
 "==============================================================================
-
-"vim-lsp
-
-if executable('css')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'css',
-        \ 'cmd': {server_info->['css']},
-        \ 'allowlist': ['css'],
-        \ })
-endif
-
-if executable('html')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'html',
-        \ 'cmd': {server_info->['html']},
-        \ 'allowlist': ['html'],
-        \ })
-endif
-
-if executable('vim')
-    au User lsp_setup call lsp#register_server({
-        \ 'name': 'vim',
-        \ 'cmd': {server_info->['vim']},
-        \ 'allowlist': ['vim'],
-        \ })
-endif
-
-function! s:on_lsp_buffer_enabled() abort
-    setlocal omnifunc=lsp#complete
-    setlocal signcolumn=yes
-    if exists('+tagfunc') | setlocal tagfunc=lsp#tagfunc | endif
-    nmap <buffer> gd <plug>(lsp-definition)
-    nmap <buffer> gs <plug>(lsp-document-symbol-search)
-    nmap <buffer> gS <plug>(lsp-workspace-symbol-search)
-    nmap <buffer> gr <plug>(lsp-references)
-    nmap <buffer> gi <plug>(lsp-implementation)
-    nmap <buffer> gt <plug>(lsp-type-definition)
-    nmap <buffer> <leader>rn <plug>(lsp-rename)
-    nmap <buffer> [g <plug>(lsp-previous-diagnostic)
-    nmap <buffer> ]g <plug>(lsp-next-diagnostic)
-    nmap <buffer> K <plug>(lsp-hover)
-    inoremap <buffer> <expr><c-f> lsp#scroll(+4)
-    inoremap <buffer> <expr><c-d> lsp#scroll(-4)
-
-    let g:lsp_format_sync_timeout = 1000
-    autocmd! BufWritePre *.rs,*.go call execute('LspDocumentFormatSync')
-    
-    " refer to doc to add more commands
-endfunction
-
-augroup lsp_install
-    au!
-    " call s:on_lsp_buffer_enabled only for languages that has the server registered.
-    autocmd User lsp_buffer_enabled call s:on_lsp_buffer_enabled()
-augroup END
