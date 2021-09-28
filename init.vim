@@ -342,6 +342,12 @@ require'lspconfig'.vimls.setup{}
 
 require'lspconfig'.sumneko_lua.setup{}
 
+require'lspconfig'.stylelint_lsp.setup{}
+
+require'lspconfig'.pylsp.setup{}
+
+require'lspconfig'.jsonls.setup {}
+
 vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
@@ -381,7 +387,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'stylelint_lsp', 'pylsp', 'jsonls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -443,6 +449,68 @@ require'lspconfig'.sumneko_lua.setup {
   },
 }
 
+-------------------------------------------------------------------------------
+require'lspconfig'.sumneko_lua.setup{ -- root_dir syntax is wrong this is the only thing in this file that needs to be solved.
+    filetypes = { "lua" };
+    log_level = 2,
+}
+-------------------------------------------------------------------------------
+
+require'lspconfig'.pyright.setup{
+    
+    cmd = { "pyright-langserver", "--stdio" };
+    filetypes = { "python" },
+    root_dir = function(fname)
+          local root_files = {
+            'pyproject.toml',
+            'setup.py',
+            'setup.cfg',
+            'requirements.txt',
+            'Pipfile',
+            'pyrightconfig.json',
+          }
+          return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname) or util.path.dirname(fname)
+        end
+}
+
+require'lspconfig'.stylelint_lsp.setup{
+    cmd = { "stylelint-lsp", "--stdio" };
+    filetypes = { "css", "less", "scss", "sugarss", "vue", "wxss", "javascript", "javascriptreact", "typescript", "typescriptreact" },
+    rootPatterns = { '.stylelintrc ', 'package.json'},
+}
+
+require'lspconfig'.pylsp.setup{
+    cmd = { "pylsp" };
+    filetypes = { "python" },
+    root_dir = function(fname)
+          local root_files = {
+            'pyproject.toml',
+            'setup.py',
+            'setup.cfg',
+            'requirements.txt',
+            'Pipfile',
+          }
+          return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname) or util.path.dirname(fname)
+        end,
+}
+
+
+require'lspconfig'.jsonls.setup {
+    commands = {
+      Format = {
+        function()
+          vim.lsp.buf.range_formatting({},{0,0},{vim.fn.line("$"),0})
+        end
+      }
+    }
+}
+--Enable (broadcasting) snippet capability for completion
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+require'lspconfig'.jsonls.setup {
+  capabilities = capabilities,
+}
 end
 EOF
 
@@ -713,3 +781,4 @@ return M
 EOF
 
 "==============================================================================
+
