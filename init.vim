@@ -56,6 +56,9 @@ set complete+=kspel
 set completeopt=menuone,longest,noinsert,noselect
 set cursorline
 set guicursor=n-v-c:block-cursor
+set noswapfile
+set nobackup
+set nowrap
 let g:rainbow_active = 1
 let g:airline_right_alt_sep = ''
 let g:airline_right_sep = ''
@@ -356,8 +359,6 @@ require'lspconfig'.sumneko_lua.setup{}
 
 require'lspconfig'.jsonls.setup {}
 
-require'lspconfig'.sqls.setup{}
-
 vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
@@ -397,7 +398,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'jsonls', 'sqls' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'jsonls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -433,7 +434,7 @@ else
 end
 
 -- set the path to the sumneko installation; if you previously installed via the now deprecated :LspInstall, use
-local sumneko_root_path = vim.fn.stdpath('cache')..'/lspconfig/sumneko_lua/lua-language-server'
+local sumneko_root_path = vim.fn.stdpath('config')..'/lspconfig/sumneko_lua/lua-language-server'
 local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
 
 local runtime_path = vim.split(package.path, ';')
@@ -584,15 +585,6 @@ require'lspconfig'.clangd.setup{
     filetypes = { "c", "cpp", "objc", "objcpp" },
 }
 end
-
-require'lspconfig'.sqls.setup{
-    cmd = { "sqls" };
-    filetypes = { "sql", "mysql" },
-    root_dir = function(fname)
-          return util.root_pattern 'config.yml'(fname) or util.path.dirname(fname)
-        end,
-    settings = {}
-}
 EOF
 
 "==============================================================================
@@ -932,4 +924,7 @@ EOF
 lua << EOF
 require('telescope').setup{}
 EOF
+
+"==============================================================================
+
 
