@@ -161,7 +161,6 @@ let g:startify_custom_header =[
     \'⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠉⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠁⠀⠀⠀⠀⠀ ',
     \]
 
-let g:rust_clip_command = 'xclip -selection clipboard'
 
 "==============================================================================
 
@@ -341,25 +340,6 @@ EOF
 "lsp-config
 
 lua << EOF
-require'lspconfig'.pyright.setup{}
-
-require'lspconfig'.rust_analyzer.setup{}
-
-require'lspconfig'.tsserver.setup{}
-
-require'lspconfig'.clangd.setup{}
-
-require'lspconfig'.html.setup{}
-
-require'lspconfig'.cssls.setup{}
-
-require'lspconfig'.vimls.setup{}
-
-require'lspconfig'.sumneko_lua.setup{}
-
-require'lspconfig'.jsonls.setup {}
-
-vim.lsp.set_log_level("debug")
 
 local nvim_lsp = require('lspconfig')
 
@@ -398,7 +378,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'cssls', 'vimls', 'html', 'clangd', 'sumneko_lua', 'jsonls' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -406,184 +386,6 @@ for _, lsp in ipairs(servers) do
       debounce_text_changes = 150,
     }
   }
-
-require'lspconfig'.tsserver.setup{
-   cmd = { "typescript-language-server", "--stdio" };
-   filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
-   root_dir = function() return vim.loop.cwd() end      -- run lsp for javascript in any directory
-}
-
-require'lspconfig'.rust_analyzer.setup{
-    cmd = {"rust-analyzer"};
-    filetypes = { "rust" },
-    root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs"),
-      settings = {
-      ["rust-analyzer"] = {}
-    }
-}
-
-local system_name
-if vim.fn.has("mac") == 1 then
-  system_name = "macOS"
-elseif vim.fn.has("unix") == 1 then
-  system_name = "Linux"
-elseif vim.fn.has('win32') == 1 then
-  system_name = "Windows"
-else
-  print("Unsupported system for sumneko")
-end
-
--- set the path to the sumneko installation; if you previously installed via the now deprecated :LspInstall, use
-local sumneko_root_path = vim.fn.stdpath('config')..'/lspconfig/sumneko_lua/lua-language-server'
-local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
-
-local runtime_path = vim.split(package.path, ';')
-table.insert(runtime_path, "lua/?.lua")
-table.insert(runtime_path, "lua/?/init.lua")
-
-require'lspconfig'.sumneko_lua.setup {
-  cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
-  filetypes = { "lua" },
-  log_level = 2,
-  settings = {
-    Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
-        -- Setup your lua path
-        path = runtime_path,
-      },
-      diagnostics = {
-        -- Get the language server to recognize the `vim` global
-        globals = {'vim'},
-      },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = vim.api.nvim_get_runtime_file("", true),
-      },
-      -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = {
-        enable = false,
-      },
-    },
-  },
-}
-
-require'lspconfig'.pyright.setup{
-    
-    cmd = { "pyright-langserver", "--stdio" };
-    filetypes = { "python" },
-    root_dir = function(fname)
-          local root_files = {
-            'pyproject.toml',
-            'setup.py',
-            'setup.cfg',
-            'requirements.txt',
-            'Pipfile',
-            'pyrightconfig.json',
-          }
-          return util.root_pattern(unpack(root_files))(fname) or util.find_git_ancestor(fname) or util.path.dirname(fname)
-        end
-}
-
-require'lspconfig'.jsonls.setup {
-    commands = {
-      Format = {
-        function()
-          vim.lsp.buf.range_formatting({},{0,0},{vim.fn.line("$"),0})
-        end
-      }
-    }
-}
-
-
---Enable (broadcasting) snippet capability for completion
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-require'lspconfig'.jsonls.setup {
-  capabilities = capabilities,
-  cmd = { "vscode-json-language-server", "--stdio" };
-    filetypes = { "json" },
-    init_options = {
-      provideFormatter = true
-    }
-}
-
---Enable (broadcasting) snippet capability for completion
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-require'lspconfig'.cssls.setup {
-  capabilities = capabilities,
-  cmd = { "vscode-css-language-server", "--stdio" };
-    filetypes = { "css", "scss", "less" },
-    settings = {
-      css = {
-        validate = true
-      },
-      less = {
-        validate = true
-      },
-      scss = {
-        validate = true
-      }
-    }
-}
-
-require'lspconfig'.vimls.setup{
-    cmd = { "vim-language-server", "--stdio" };
-    filetypes = { "vim" },
-    init_options = {
-      diagnostic = {
-        enable = true
-      },
-      indexes = {
-        count = 3,
-        gap = 100,
-        projectRootPatterns = { "runtime", "nvim", ".git", "autoload", "plugin" },
-        runtimepath = true
-      },
-      iskeyword = "@,48-57,_,192-255,-#",
-      runtimepath = "",
-      suggest = {
-        fromRuntimepath = true,
-        fromVimruntime = true
-      },
-      vimruntime = ""
-    },
-    root_dir = function(fname)
-          return vim.fn.getcwd()
-        end,
-}
-
-
---Enable (broadcasting) snippet capability for completion
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities.textDocument.completion.completionItem.snippetSupport = true
-
-require'lspconfig'.html.setup {
-  capabilities = capabilities,
-  cmd = { "vscode-html-language-server", "--stdio" };
-    filetypes = { "html" },
-    init_options = {
-      configurationSection = { "html", "css", "javascript" },
-      embeddedLanguages = {
-        css = true,
-        javascript = true
-      }
-    },
-    root_dir = function(fname)
-          return util.root_pattern('package.json', '.git')(fname) or util.path.dirname(fname)
-        end,
-    settings = {}
-}
-
-require'lspconfig'.clangd.setup{
-    capabilities = capabilities,
-    cmd = { "clangd", "--background-index" };
-    filetypes = { "c", "cpp", "objc", "objcpp" },
-}
 end
 EOF
 
@@ -723,15 +525,16 @@ lua <<EOF
 
       { name = 'buffer' },
       
-      { name = 'treesitter' },
-      
       { name = 'nvim-lua' },
+      
+      { name = 'tresitter' },
+      
+      { name = 'shadovim' },
       
       { name = 'spell' },
       
       { name = 'tags' },
-      
-      { name = 'shadovim' },
+
     },
     formatting = {
     format = function(entry, vim_item)
@@ -753,25 +556,97 @@ lua <<EOF
       return vim_item
     end,
   },
-})
+  })
 
   -- Setup lspconfig.
+  
   require 'lspconfig'.pyright.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   }
+  require 'lspconfig'.vimls.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  }
 
--- The nvim-cmp almost supports LSP's capabilities so You should advertise it to LSP servers..
-local capabilities = vim.lsp.protocol.make_client_capabilities()
-capabilities = require('cmp_nvim_lsp').update_capabilities(capabilities)
+  require 'lspconfig'.cssls.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  }
+  
+  require 'lspconfig'.html.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  }
 
--- The following example advertise capabilities to `clangd`.
-require'lspconfig'.clangd.setup {
-  capabilities = capabilities,
-}
+  require 'lspconfig'.jsonls.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+  }
 
-get_bufnrs = function()
-  return vim.api.nvim_list_bufs()
+  require 'lspconfig'.clangd.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  }
+
+  require 'lspconfig'.tsserver.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    cmd = { "typescript-language-server", "--stdio" };
+    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+    root_dir = function() return vim.loop.cwd() end
+  }
+
+  require 'lspconfig'.rust_analyzer.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    cmd = { "rust-analyzer" };
+    filetypes = { "rust" },
+    root_dir = require'lspconfig'.util.root_pattern("Cargo.toml", "rust-project.json", ".git", "*.rs"),
+    settings = {
+      ["rust-analyzer"] = {},
+    },
+  }
+
+local system_name
+if vim.fn.has("mac") == 1 then
+  system_name = "macOS"
+elseif vim.fn.has("unix") == 1 then
+  system_name = "Linux"
+elseif vim.fn.has('win32') == 1 then
+  system_name = "Windows"
+else
+  print("Unsupported system for sumneko")
 end
+
+-- set the path to the sumneko installation; if you previously installed via the now deprecated :LspInstall, use
+local sumneko_root_path = vim.fn.stdpath('cache')..'/lspconfig/sumneko_lua/lua-language-server'
+local sumneko_binary = sumneko_root_path.."/bin/"..system_name.."/lua-language-server"
+
+local runtime_path = vim.split(package.path, ';')
+table.insert(runtime_path, "lua/?.lua")
+table.insert(runtime_path, "lua/?/init.lua")
+require 'lspconfig'.sumneko_lua.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    filetypes = { "lua" },
+    log_level = 2,
+    root_dir = bufdir,
+  cmd = {sumneko_binary, "-E", sumneko_root_path .. "/main.lua"};
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+        -- Setup your lua path
+        path = runtime_path,
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = {'vim'},
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file("", true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
+}
 
 EOF
 
