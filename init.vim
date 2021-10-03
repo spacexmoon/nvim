@@ -32,6 +32,15 @@ nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
 nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
 nnoremap gR <cmd>TroubleToggle lsp_references<cr>
 
+nnoremap <silent><expr> <LocalLeader>r  :MagmaEvaluateOperator<CR>
+nnoremap <silent>       <LocalLeader>rr :MagmaEvaluateLine<CR>
+xnoremap <silent>       <LocalLeader>r  :<C-u>MagmaEvaluateVisual<CR>
+nnoremap <silent>       <LocalLeader>rc :MagmaReevaluateCell<CR>
+nnoremap <silent>       <LocalLeader>rd :MagmaDelete<CR>
+nnoremap <silent>       <LocalLeader>ro :MagmaShowOutput<CR>
+
+let g:magma_automatically_open_output = v:false
+
 "==============================================================================
 
 "Sets and Lets
@@ -198,11 +207,13 @@ Plug 'ambv/black'
 Plug 'sbdchd/neoformat'
 Plug 'rust-lang/rust.vim'
 Plug 'darrikonn/vim-gofmt', { 'do': ':GoUpdateBinaries' }
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
 Plug 'nvim-telescope/telescope-fzy-native.nvim'
 Plug 'vim-autoformat/vim-autoformat'
 Plug 'mbbill/undotree'
 Plug 'rust-analyzer/rust-analyzer'
 Plug 'folke/trouble.nvim'
+Plug 'dccsillag/magma-nvim', { 'do': ':UpdateRemotePlugins' }
 
 Plug 'ThePrimeagen/refactoring.nvim'
 
@@ -378,7 +389,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd', 'bashls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -559,10 +570,21 @@ lua <<EOF
   })
 
   -- Setup lspconfig.
-  
+
   require 'lspconfig'.pyright.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   }
+
+  require 'lspconfig'.bashls.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    cmd = { "bash-language-server", "start" },
+    cmd_env = {
+      GLOB_PATTERN = "*@(.sh|.inc|.bash|.command)"
+    },
+    filetypes = { "sh", "zsh" },
+    root_dir = function() return vim.loop.cwd() end 
+  }
+
   require 'lspconfig'.vimls.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
   }
@@ -801,5 +823,3 @@ require('telescope').setup{}
 EOF
 
 "==============================================================================
-
-
