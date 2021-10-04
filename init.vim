@@ -32,15 +32,6 @@ nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
 nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
 nnoremap gR <cmd>TroubleToggle lsp_references<cr>
 
-nnoremap <silent><expr> <LocalLeader>r  :MagmaEvaluateOperator<CR>
-nnoremap <silent>       <LocalLeader>rr :MagmaEvaluateLine<CR>
-xnoremap <silent>       <LocalLeader>r  :<C-u>MagmaEvaluateVisual<CR>
-nnoremap <silent>       <LocalLeader>rc :MagmaReevaluateCell<CR>
-nnoremap <silent>       <LocalLeader>rd :MagmaDelete<CR>
-nnoremap <silent>       <LocalLeader>ro :MagmaShowOutput<CR>
-
-let g:magma_automatically_open_output = v:false
-
 "==============================================================================
 
 "Sets and Lets
@@ -213,7 +204,6 @@ Plug 'vim-autoformat/vim-autoformat'
 Plug 'mbbill/undotree'
 Plug 'rust-analyzer/rust-analyzer'
 Plug 'folke/trouble.nvim'
-Plug 'dccsillag/magma-nvim', { 'do': ':UpdateRemotePlugins' }
 
 Plug 'ThePrimeagen/refactoring.nvim'
 
