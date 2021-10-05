@@ -32,6 +32,13 @@ nnoremap <leader>xq <cmd>TroubleToggle quickfix<cr>
 nnoremap <leader>xl <cmd>TroubleToggle loclist<cr>
 nnoremap gR <cmd>TroubleToggle lsp_references<cr>
 
+nnoremap <silent><expr> <LocalLeader>meo  :MagmaEvaluateOperator<CR>
+nnoremap <silent>       <LocalLeader>mel :MagmaEvaluateLine<CR>
+xnoremap <silent>       <LocalLeader>mev  :<C-u>MagmaEvaluateVisual<CR>
+nnoremap <silent>       <LocalLeader>mrl :MagmaReevaluateCell<CR>
+nnoremap <silent>       <LocalLeader>md :MagmaDelete<CR>
+nnoremap <silent>       <LocalLeader>mso :MagmaShowOutput<CR>
+
 "==============================================================================
 
 "Sets and Lets
@@ -97,6 +104,8 @@ let g:UltiSnipsExpandTrigger="<>"
 
 let g:seiya_auto_enable=1
 let g:seiya_target_groups = has('nvim') ? ['guibg'] : ['ctermbg']
+
+let g:magma_automatically_open_output = v:false
 
 " let g:startify_custom_header = [
 "         \ '   _  __     _         __  ___         __     ___ ',
@@ -204,6 +213,8 @@ Plug 'vim-autoformat/vim-autoformat'
 Plug 'mbbill/undotree'
 Plug 'rust-analyzer/rust-analyzer'
 Plug 'folke/trouble.nvim'
+Plug 'dccsillag/magma-nvim', { 'do': ':UpdateRemotePlugins' }
+Plug 'OmniSharp/omnisharp-vim'
 
 Plug 'ThePrimeagen/refactoring.nvim'
 
@@ -379,7 +390,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd', 'bashls' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd', 'bashls', 'gopls', 'omnisharp', 'sqls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -563,6 +574,23 @@ lua <<EOF
 
   require 'lspconfig'.pyright.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
+  }
+
+  local pid = vim.fn.getpid()
+  local omnisharp_bin = "/home/moon/.vim/plugged/omnisharp-roslyn"
+  require 'lspconfig'.omnisharp.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
+    filetypes = { "cs", "vb" },
+    init_options = {},
+    root_dir = function() return vim.loop.cwd() end 
+  }
+
+  require 'lspconfig'.gopls.setup {
+    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
+    cmd = { "/home/moon/go/bin/gopls" };
+    filetypes = { "go", "gomod" },
+    root_dir = function() return vim.loop.cwd() end 
   }
 
   require 'lspconfig'.bashls.setup {
