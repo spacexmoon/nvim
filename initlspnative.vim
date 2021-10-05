@@ -577,7 +577,7 @@ lua <<EOF
   }
 
   local pid = vim.fn.getpid()
-  local omnisharp_bin = "/home/moon/.vim/plugged/omnisharp-roslyn"
+  local omnisharp_bin = "path to excutable needed here and i can not find it yet"
   require 'lspconfig'.omnisharp.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
     cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
