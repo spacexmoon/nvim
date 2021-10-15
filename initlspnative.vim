@@ -390,7 +390,7 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd', 'bashls', 'gopls', 'omnisharp', 'sqls' }
+local servers = { 'pyright', 'rust_analyzer', 'tsserver', 'jsonls', 'vimls', 'html', 'cssls', 'sumneko_lua', 'clangd', 'bashls', 'gopls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     on_attach = on_attach,
@@ -574,16 +574,6 @@ lua <<EOF
 
   require 'lspconfig'.pyright.setup {
     capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities())
-  }
-
-  local pid = vim.fn.getpid()
-  local omnisharp_bin = "path to excutable needed here and i can not find it yet"
-  require 'lspconfig'.omnisharp.setup {
-    capabilities = require('cmp_nvim_lsp').update_capabilities(vim.lsp.protocol.make_client_capabilities()),
-    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) };
-    filetypes = { "cs", "vb" },
-    init_options = {},
-    root_dir = function() return vim.loop.cwd() end 
   }
 
   require 'lspconfig'.gopls.setup {
